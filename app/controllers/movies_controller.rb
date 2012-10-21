@@ -10,56 +10,36 @@ class MoviesController < ApplicationController
 
   def index
 
-    # Load all ratings from model
-    # Initialize checked to true for each rate
+    #Initialize checked ratings in the form
     @all_ratings = Hash.new
+    #All to true (default)
     Movie.load_ratings.each { |r| @all_ratings[r] = true }
-    #logger.debug @all_ratings
 
+    #Retrieve sorting
+    @sorting = params[:sorting]
 
-    if !params['ratings'].nil?
-      #logger.debug 'params not null'
-      #check only ratings which are in the Parameters
-      Movie.load_ratings.each do |r|
-        has_key = params['ratings'].has_key?(r)
-        if has_key
-          value = params['ratings'][r]
-          #logger.debug 'value'
-          #logger.debug value
-          if value == "true"
-            #logger.debug 'in'
-            @all_ratings[r] = true
-          else
-            #logger.debug 'out'
-            @all_ratings[r] = false
-          end
-        else
-          #logger.debug 'out'
-          @all_ratings[r] = false
-        end
-      end  
+    # Retrieve ratings in a Hash
+    checked_ratings = Hash.new
+    #for each element, set value to "true" (unless not nil to avoid error)
+    checked_ratings = params[:ratings].select{|k, v| v == "true"} unless params[:ratings] == nil
+
+    if(params.has_key?(:commit) or params.has_key?(:sorting)) 
+
+      # bind the static variable for the form construction (next display)
+      Movie.load_ratings.each { |r| @all_ratings[r] = checked_ratings.has_key?(r) }
+
+      if checked_ratings.empty?
+        @movies = []
+      else  
+        # return @movies after filtering by ratings that have been checked
+        @movies = Movie.find(:all, :conditions => [ "rating IN (?)", checked_ratings.keys], :order => @sorting)
+      end
+
     else
-      #logger.debug 'empty'
-      #No ratings are selectd -> all true
-      Movie.load_ratings.each { |r| @all_ratings[r] = true }
-    end
 
-    #logger.debug 'filter'
-    #logger.debug @all_ratings
+      # Display all movies
+      @movies = Movie.find(:all)
 
-
-    # Sorting
-    if !params[:sorting].nil?
-      #logger.debug 'sorting is not null'
-      @sorting = params[:sorting]
-    end
-      
-
-    if !params['ratings'].nil?
-      #logger.debug params['ratings'].keys
-      @movies = Movie.find(:all, :conditions => [ "rating IN (?)", params['ratings'].keys], :order => sorting)
-    else
-      @movies = Movie.find(:all, :order => sorting)
     end
 
   end 
