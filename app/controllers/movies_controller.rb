@@ -44,6 +44,7 @@ class MoviesController < ApplicationController
         @movies = Movie.find(:all, :conditions => [ "rating IN (?)", checked_ratings.keys], :order => @sorting)
       end
 
+      # add cookie for the next request (if needed)
       session[:cookie] = params
 
     else
