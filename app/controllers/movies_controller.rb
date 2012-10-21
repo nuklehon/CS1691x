@@ -10,7 +10,7 @@ class MoviesController < ApplicationController
 
   def index
 
-    if session.has_key?(:cookie) and !(params.has_key?(:order) or params.has_key?(:commit))
+    if session.has_key?(:cookie) and !(params.has_key?(:sorting) or params.has_key?(:commit))
       logger.debug 'use cookie'
 
       #apply this cookie
