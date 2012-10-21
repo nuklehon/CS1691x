@@ -10,6 +10,15 @@ class MoviesController < ApplicationController
 
   def index
 
+    if session.has_key?(:cookie) and !(params.has_key?(:order) or params.has_key?(:commit))
+      logger.debug 'use cookie'
+
+      #apply this cookie
+      redirect_to movies_path(session[:cookie])
+    end
+    
+    session.delete(:cookie) 
+
     #Initialize checked ratings in the form
     @all_ratings = Hash.new
     #All to true (default)
@@ -34,6 +43,8 @@ class MoviesController < ApplicationController
         # return @movies after filtering by ratings that have been checked
         @movies = Movie.find(:all, :conditions => [ "rating IN (?)", checked_ratings.keys], :order => @sorting)
       end
+
+      session[:cookie] = params
 
     else
 
